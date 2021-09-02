@@ -4,7 +4,7 @@ const { Client } = require('pg'); // imports the pg module
 const client = new Client('postgres://localhost:5432/juicebox-dev');
 
 async function getAllUsers() {
-    const { rows } = await client.query(
+    const { rows } = await client.query( //ASK what is rows destructured from? The table? How?
       `SELECT id, username, name, location, active 
       FROM users;
     `);
@@ -64,9 +64,8 @@ async function getAllUsers() {
   }) {
     try {
       const { rows: [ post ] } = await client.query(`
-        INSERT INTO posts(authorId, title, content) 
-        VALUES($1, $2, $3) 
-        ON CONFLICT (content) DO NOTHING 
+        INSERT INTO posts("authorId", title, content) 
+        VALUES($1, $2, $3)  
         RETURNING *;
       `, [authorId, title, content]);
 
@@ -85,7 +84,7 @@ async function getAllUsers() {
       const setString = Object.keys(fields).map(
         (key, index) => `"${ key }"=$${ index + 1 }`
       ).join(', ');
-    
+    console.log(id)
       // return early if this is called without fields
       if (setString.length === 0) {
         return;
@@ -98,7 +97,7 @@ async function getAllUsers() {
       RETURNING *;
     `, Object.values(fields));
 
-    return post;
+    return post
     } catch (error) {
       throw error;
     }
@@ -107,7 +106,7 @@ async function getAllUsers() {
   async function getAllPosts() {
     try {
       const { rows } = await client.query(
-        `SELECT authorId, title, content, active 
+        `SELECT id, "authorId", title, content, active 
         FROM posts;
       `);
     
@@ -120,7 +119,7 @@ async function getAllUsers() {
   async function getPostsByUser(userId) {
     
     try {
-      const { rows } = client.query(`
+      const { rows } = await client.query(`
         SELECT * FROM posts
         WHERE "authorId"=${ userId };
       `);
@@ -137,17 +136,17 @@ async function getAllUsers() {
       // (2) a `rows` array that (in this case) will contain 
       // (3) one object, which is our user.
     // if it doesn't exist (if there are no `rows` or `rows.length`), return null
-    const { rows } = client.query(`
+    const { rows: [user] } = await client.query(`
         SELECT * FROM users
-        WHERE "username"=${ userId };
+        WHERE "id"=${ userId };
       `);
-      if (rows.length === 0) {
-        return;
-      } 
-      delete rows.password
-      getPostsByUser()
-      rows.push({posts: posts}) //check this out a bit closer
-      return rows
+      // if (!rows || rows.length === 0) {
+      //   return;
+      // } 
+      delete user.password
+      const posts = await getPostsByUser(userId)
+      user.posts = posts //check this out a bit closer
+      return user
 
     // if it does:
     // delete the 'password' key from the returned object
