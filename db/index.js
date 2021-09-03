@@ -140,9 +140,9 @@ async function getAllUsers() {
         SELECT * FROM users
         WHERE "id"=${ userId };
       `);
-      // if (!rows || rows.length === 0) {
-      //   return;
-      // } 
+      if (!rows || rows.length === 0) {
+        return;
+      } 
       delete user.password
       const posts = await getPostsByUser(userId)
       user.posts = posts //check this out a bit closer
@@ -153,6 +153,33 @@ async function getAllUsers() {
     // get their posts (use getPostsByUser)
     // then add the posts to the user object with key 'posts'
     // return the user object
+  }
+
+
+  async function createTags(tagList) {
+    if (tagList.length === 0) { 
+      return; 
+    } 
+  
+    // need something like: $1), ($2), ($3 
+    const insertValues = tagList.map(
+      (_, index) => `$${index + 1}`).join('), (');
+    // then we can use: (${ insertValues }) in our string template
+  
+    // need something like $1, $2, $3
+    const selectValues = tagList.map(
+      (_, index) => `$${index + 1}`).join(', ');
+    // then we can use (${ selectValues }) in our string template
+  
+    try {
+      // insert the tags, doing nothing on conflict
+      // returning nothing, we'll query after
+  
+      // select all tags where the name is in our taglist
+      // return the rows from the query
+    } catch (error) {
+      throw error;
+    }
   }
   
   // and export them
