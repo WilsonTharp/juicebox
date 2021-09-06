@@ -4,6 +4,7 @@ const { JWT_SECRET } = process.env;
 const express = require('express');
 const apiRouter = express.Router();
 
+
 // set `req.user` if possible
 apiRouter.use(async (req, res, next) => {
   const prefix = 'Bearer ';
@@ -19,9 +20,7 @@ apiRouter.use(async (req, res, next) => {
 
       if (id) {
         req.user = await getUserById(id);
-        console.log("req.user =", req.user)
         next();
-        
       }
     } catch ({ name, message }) {
       next({ name, message });
@@ -31,19 +30,16 @@ apiRouter.use(async (req, res, next) => {
       name: 'AuthorizationHeaderError',
       message: `Authorization token must start with ${ prefix }`
     });
-    
   }
 });
 
-
 apiRouter.use((req, res, next) => {
-    
-    if (req.user) {
-      console.log("User is set:", req.user);
-    }
-  
-    next();
-  });
+  if (req.user) {
+    console.log("User is set:", req.user);
+  }
+
+  next();
+});
 
 
 const usersRouter = require('./users');
@@ -56,8 +52,8 @@ const tagsRouter = require('./tags');
 apiRouter.use('/tags', tagsRouter);
 
 apiRouter.use((error, req, res, next) => {
-    res.send(error);
-  });
+  res.send(error); //this isn't working? I have no idea why.
+});
   
 
 module.exports = apiRouter;
