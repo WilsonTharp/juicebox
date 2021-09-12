@@ -83,6 +83,11 @@ postsRouter.get('/', async (req, res) => {
     const posts = allPosts.filter(post => {
       return post.active || (req.user && post.author.id === req.user.id);
     });
+    res.send({posts});
+    } catch(error) {
+        console.error(error)
+    }
+})
 
   postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
     try {
